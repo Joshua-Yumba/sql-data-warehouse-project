@@ -1,0 +1,112 @@
+=======================================================================
+Transforming and loading data 
+======================================================================
+
+INSERT INTO silver.crm_lab_test(
+    report_agency,
+    location,
+    test_type,
+    number_tested_patient,
+    gender,
+    month,
+    test_id,
+    treatement_id
+)
+SELECT
+    report_agency,
+    location,
+    test_type,
+    number_tested_patient,
+    gender,
+    month,
+    test_id,
+    treatement_id
+FROM bronze.crm_lab_test
+
+-- Checking and removing unwanted space
+SELECT*
+FROM bronze.crm_screening
+
+SELECT test_type
+FROM bronze.crm_lab_test
+WHERE test_type != TRIM(test_type)
+
+--Data Standardization & Consistency
+SELECT DISTINCT gender
+FROM bronze.crm_lab_test
+
+-----REPLACING MISSING VALUE
+UPDATE bronze.crm_lab_test
+SET 
+    sub_court =ISNULL(sub_court,'N/A')
+    WHERE 
+    sub_court IS NULL
+
+    location= ISNULL(location, 'N/A'),
+    test_type = ISNULL(test_type,'N/A'),
+    gender = ISNULL(gender,'N/A'),
+    month = ISNULL(month,'N/A')
+WHERE 
+    report_agency IS NULL
+    OR location IS NULL
+    OR test_type IS NULL
+      OR gender IS NULL
+       OR month IS NULL;
+       
+
+UPDATE bronze.crm_lab_test
+SET 
+test_id = ISNULL(test_id, 0);
+UPDATE bronze.crm_lab_test
+SET 
+number_tested_patient=ISNULL(number_tested_patient,0);
+
+SELECT ISNULL(gender, 'N/A') AS gender
+FROM bronze.crm_lab_test;
+
+
+
+SELECT *
+FROM bronze.crm_screening_rslt
+
+UPDATE bronze.crm_screening
+SET 
+number_patient = ISNULL(number_patient, 0);
+UPDATE bronze.crm_screening
+
+INSERT INTO silver.erp_treatement(
+ category,
+hospital,
+month,
+gender,
+number_patient,
+treatement_id,
+sceening_id,
+test_id
+)
+SELECT
+category,
+hospital,
+month,
+gender,
+number_patient,
+treatement_id,
+sceening_id,
+test_id
+
+FROM bronze.erp_treatement 
+
+SELECT *
+FROM bronze.erp_treatement
+
+UPDATE bronze.erp_treatement
+SET 
+test_id= ISNULL(test_id, 0);
+
+
+
+UPDATE bronze.erp_report
+SET 
+    gender =ISNULL(gender,'N/A')
+    WHERE 
+    gender IS NULL
